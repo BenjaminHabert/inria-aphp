@@ -1,4 +1,4 @@
-name: Python package
+name: aphp python package
 
 on: [push]
 
