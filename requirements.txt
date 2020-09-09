@@ -1,0 +1,8 @@
+pandas
+sqlalchemy
+jupyter
+
+# dev requirements
+pytest
+flake8
+black
