@@ -15,5 +15,5 @@ pip install -r requirements.txt
 
 # running notebooks
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-jupyter notebooks
+jupyter notebook
 ```
