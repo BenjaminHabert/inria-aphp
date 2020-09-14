@@ -35,6 +35,8 @@ des données brutes.
 
 ### Données patient
 
+20000 lignes
+
 Voir [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb) pour plus de détails.
 
 - Certains `patient_id` sont dupliqués et ne correspondent pas au même patient. On ne peut donc pas prendre en compte ces
@@ -76,4 +78,27 @@ Voir [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb)
     phone_number      4.607848
     address_2        60.580701
     birthday         10.965964
+    ```
+
+
+### Tests PCR
+
+- pas de valeurs manquantes. 8800 résultats de test
+
+- on choisit de reformatter la colonne `pcr` en booléen en prenant en compte
+  les différents textes (exemple, `'Positive' == 'P' == True`)
+
+- pour 35 `patient_id`: plusieurs résultats de test. On choisit de considérer un ensemble de tests comme positif 
+  si au moins l'un de ces tests est positif.
+
+- tous les IDs dans cette table sont présents dans la table des patients. Malheureusement on perd 1.5 % des résultats
+  de tests PCR lorsque l'on supprime les patients avec un ID erronné (on ne sait pas à qui attribuer un ID parmis 2
+  patients)
+
+- Au final, le nombre de tests positifs est:
+
+    ```
+    False    6583
+    True     2182
+    Name: pcr_positive, dtype: int64
     ```
