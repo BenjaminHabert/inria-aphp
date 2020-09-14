@@ -1,6 +1,7 @@
 pandas
 sqlalchemy
 jupyter
+matplotlib
 
 # dev requirements
 pytest
