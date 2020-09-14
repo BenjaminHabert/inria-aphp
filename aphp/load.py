@@ -1,7 +1,12 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-from aphp import settings
+from aphp import settings, clean_patient
+
+
+def load_clean_patients():
+    df = load_raw_patients()
+    return clean_patient.clean_raw_patient_data(df)
 
 
 def load_raw_patients():

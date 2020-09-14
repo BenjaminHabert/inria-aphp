@@ -61,3 +61,19 @@ Voir [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb)
 - le `postcode` est plutôt bien renseigné. Dans quelques rares cas (14), le code postal est dans la colonne `suburb`
 - les `phone_number` sont correctement formatés. Seulement 20% sont des numéros de téléphone mobile.
 
+- **Après nettoyage des valeurs erronnées**, le pourcentage de valeurs manquantes est le suivant:
+
+    ```
+    patient_id        0.000000
+    given_name        2.189111
+    surname           2.138082
+    street_number     1.908455
+    address_1         3.985304
+    suburb            1.035873
+    postcode          0.995050
+    state            10.644486
+    age              19.982650
+    phone_number      4.607848
+    address_2        60.580701
+    birthday         10.965964
+    ```
