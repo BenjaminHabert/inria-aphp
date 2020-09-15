@@ -65,7 +65,7 @@ def _find_pairs_from_phone(df_patient):
         for patient_1, patient_2 in _iter_pairs_of_rows(group):
             conditions = (
                 _same_name(patient_1, patient_2),
-                _same_birthday(patient_1, patient_2),
+                # _same_birthday(patient_1, patient_2),
             )
             if any(conditions):
                 pairs.append((patient_1["patient_id"], patient_2["patient_id"]))
@@ -96,24 +96,28 @@ def _add_id_groups(df_patient, groups_of_ids):
 
     Returns
     -------
-        DataFrame with additional column: `all_patient_ids` (set)
+        DataFrame with additional column: `all_patient_ids` (list)
 
     """
     starting_dtype = df_patient["patient_id"].dtype
 
     # build dataframe of patient_ids
     records = (
-        {"patient_id": key, "all_patient_ids": value, "unique_patient_id": min(value)}
+        {
+            "patient_id": key,
+            "all_patient_ids": list(value),
+            "unique_patient_id": min(value),
+        }
         for key, value in groups_of_ids.items()
     )
     id_info = pd.DataFrame.from_records(records)
     df = df_patient.merge(id_info, on="patient_id", how="left")
 
-    # if no match after merge (a line with duplicates), the set of all_patient_ids is just
+    # if no match after merge (a line without duplicates), the list of all_patient_ids is just
     # this patient_id
     missing_id = df["all_patient_ids"].isnull()
     df.loc[missing_id, "all_patient_ids"] = df.loc[missing_id, "patient_id"].transform(
-        lambda patient_id: {patient_id}
+        lambda patient_id: [patient_id]
     )
 
     # otherwise (when it did match), we replace the patient_id by a unique_patient_id
@@ -183,7 +187,7 @@ def _iter_pairs_of_rows(df):
             yield (row_1, row_2)
 
 
-def _same_name(patient_1, patient_2, maximum_distance=3):
+def _same_name(patient_1, patient_2, maximum_distance=2):
     fullname_1 = _sorted_string(patient_1["given_name"], patient_1["surname"])
     fullname_2 = _sorted_string(patient_2["given_name"], patient_2["surname"])
     return Levenshtein.distance(fullname_1, fullname_2) <= maximum_distance

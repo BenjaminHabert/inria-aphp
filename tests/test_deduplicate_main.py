@@ -31,9 +31,9 @@ def test_add_id_groups():
     groups_of_ids = {"A": {"A", "B"}, "B": {"A", "B"}}
     expected_result = pd.DataFrame(
         data=[
-            ("A", "benjamin", {"A", "B"}),
-            ("A", "habert", {"A", "B"}),
-            ("C", "other", {"C"}),
+            ("A", "benjamin", ["A", "B"]),
+            ("A", "habert", ["A", "B"]),
+            ("C", "other", ["C"]),
         ],
         columns=["patient_id", "some_column", "all_patient_ids"],
     )
@@ -45,17 +45,17 @@ def test_add_id_groups():
 def test_keep_one_line_per_patient():
     df = pd.DataFrame(
         data=[
-            ("A", "bjamin", np.NaN, {"A", "B"}),
-            ("A", "benjamin", np.NaN, {"A", "B"}),
-            ("A", "benjamin", "test", {"A", "B"}),
-            ("C", "other", np.NaN, {"C"}),
+            ("A", "bjamin", np.NaN, ["A", "B"]),
+            ("A", "benjamin", np.NaN, ["A", "B"]),
+            ("A", "benjamin", "test", ["A", "B"]),
+            ("C", "other", np.NaN, ["C"]),
         ],
         columns=["patient_id", "name", "col_with_nan", "all_patient_ids"],
     )
     expected_result = pd.DataFrame(
         data=[
-            ("A", "benjamin", "test", {"A", "B"}),
-            ("C", "other", np.NaN, {"C"}),
+            ("A", "benjamin", "test", ["A", "B"]),
+            ("C", "other", np.NaN, ["C"]),
         ],
         columns=["patient_id", "name", "col_with_nan", "all_patient_ids"],
     )
