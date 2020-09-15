@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import Levenshtein
 
+from aphp import settings
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -213,7 +215,9 @@ def _iter_pairs_of_rows(df):
             yield (row_1, row_2)
 
 
-def _similar_fullname(patient_1, patient_2, maximum_distance=3):
+def _similar_fullname(
+    patient_1, patient_2, maximum_distance=settings.DEDUPLICATION_MAX_LEVEN_DISTANCE
+):
     # comparison is only allowed if we have both given_name and surname
     values = [
         p[col] for p in (patient_1, patient_2) for col in ("given_name", "surname")
