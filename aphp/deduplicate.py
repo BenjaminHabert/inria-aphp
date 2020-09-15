@@ -1,8 +1,26 @@
+import logging
+import time
+
 import pandas as pd
 import numpy as np
 import Levenshtein
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
+
+def runtime(func):
+    def wrapped_func(*args, **kwargs):
+        t0 = time.perf_counter()
+        result = func(*args, **kwargs)
+        eslapsed = time.perf_counter() - t0
+        logger.info(f"<{func.__name__}> - {eslapsed:.1f} s")
+        return result
+
+    return wrapped_func
+
+
+@runtime
 def detect_duplicates(df_patient):
     """Remove duplicates from Dataframe of patients
 
@@ -17,20 +35,27 @@ def detect_duplicates(df_patient):
     Returns
     -------
         DataFrame similar to input df_patient with:
-            - duplicated_removed
+            - duplicates removed
             - additional column `all_patient_ids` containing a set of `patient_id`
               from the original dataframe
 
     """
     same_phone = _find_pairs_from_phone(df_patient)
     same_postcode = _find_pairs_from_postcode_and_birthday(df_patient)
+    all_pairs_of_ids = list(set(same_phone + same_postcode))
 
-    all_pairs_of_ids = same_phone + same_postcode
+    logger.info(f"Found {len(same_phone)} pairs of duplicates using phone numbers.")
+    logger.info(f"Found {len(same_postcode)} pairs of duplicates using birthday.")
+    logger.info(f"Found {len(all_pairs_of_ids)} total pairs of duplicates.")
+
     df = _deduplicate(df_patient, all_pairs_of_ids)
+
+    logger.info(f"Patient deduplication: {len(df_patient)} -> {len(df)}")
 
     return df
 
 
+@runtime
 def _find_pairs_from_phone(df_patient):
     """Return list of (patient_id_1, patient_id_2) for duplicated users (same phone and name)."""
     pairs = []
@@ -38,16 +63,22 @@ def _find_pairs_from_phone(df_patient):
         if len(group) < 2:
             continue
         for patient_1, patient_2 in _iter_pairs_of_rows(group):
-            if _same_name(patient_1, patient_2):
+            conditions = (
+                _same_name(patient_1, patient_2),
+                _same_birthday(patient_1, patient_2),
+            )
+            if any(conditions):
                 pairs.append((patient_1["patient_id"], patient_2["patient_id"]))
     return pairs
 
 
+@runtime
 def _find_pairs_from_postcode_and_birthday(df_patient):
     pairs = []
     return pairs
 
 
+@runtime
 def _deduplicate(df_patient, pairs_of_ids):
     groups = _build_id_groups(pairs_of_ids)
     df_with_id_group = _add_id_groups(df_patient, groups)
@@ -94,6 +125,7 @@ def _add_id_groups(df_patient, groups_of_ids):
     return df
 
 
+@runtime
 def _keep_one_line_per_patient(df_with_id_group):
     """Remove duplicates of `patient_id` while keeping the most frequent data for each duplicate."""
     columns = df_with_id_group.columns
@@ -151,7 +183,7 @@ def _iter_pairs_of_rows(df):
             yield (row_1, row_2)
 
 
-def _same_name(patient_1, patient_2, maximum_distance=2):
+def _same_name(patient_1, patient_2, maximum_distance=3):
     fullname_1 = _sorted_string(patient_1["given_name"], patient_1["surname"])
     fullname_2 = _sorted_string(patient_2["given_name"], patient_2["surname"])
     return Levenshtein.distance(fullname_1, fullname_2) <= maximum_distance
@@ -161,3 +193,11 @@ def _sorted_string(*string_elements):
     without_nans = (s if s and s is not np.NaN else "" for s in string_elements)
     assembled = " ".join(without_nans)
     return " ".join(sorted(s for s in assembled.split(" "))).strip()
+
+
+def _same_birthday(patient_1, patient_2):
+    return (
+        (patient_1["birthday"] == patient_2["birthday"])
+        and patient_1["birthday"]
+        and patient_1["birthday"] is not np.NaN
+    )
