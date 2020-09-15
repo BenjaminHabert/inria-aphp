@@ -2,6 +2,7 @@ pandas
 sqlalchemy
 jupyter
 matplotlib
+python-Levenshtein
 
 # dev requirements
 pytest

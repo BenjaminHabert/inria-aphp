@@ -1,7 +1,13 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-from aphp import settings, clean_patient, clean_pcr
+from aphp import settings, clean_patient, clean_pcr, deduplicate
+
+
+def load_deduplicated_patients():
+    df = load_clean_patients()
+    df = deduplicate.detect_duplicates(df)
+    return df
 
 
 def load_clean_patients():
