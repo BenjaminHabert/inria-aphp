@@ -7,16 +7,28 @@ from aphp import deduplicate
 def test_find_pairs_from_phone():
     df = pd.DataFrame(
         data=[
-            ("A", "benjamin", "habert", "phone_number_1"),
-            ("B", "bjamin", "habert", "phone_number_1"),  # same as A
-            ("C", "bjamin", "hert", "phone_number_1"),  # same as B (but not A)
-            ("D", "bjamin", np.NaN, "phone_number_1"),
-            ("E", "benjamin", "habert", "phone_number_2"),
+            ("A", "benjamin", "habert", "phone_number_1", None),
+            ("B", "bnjamin", "habrt", "phone_number_1", None),  # same as A
+            ("C", "benjamin", None, "phone_number_1", None),  # same as A
+            ("D", "benja", None, "phone_number_1", None),
+            ("E", "benjamin", "habert", "phone_number_2", None),
         ],
-        columns=["patient_id", "given_name", "surname", "phone_number"],
+        columns=["patient_id", "given_name", "surname", "phone_number", "birthday"],
     )
     result = list(deduplicate._find_pairs_from_phone(df))
-    assert result == [("A", "B"), ("B", "C")]
+    assert result == [("A", "B"), ("A", "C")]
+
+    df = pd.DataFrame(
+        data=[
+            ("A", "benjamin", "habert", "phone_number_1", "05-12"),
+            ("B", None, None, "phone_number_1", "05-12"),  # same as A
+            ("D", None, None, "phone_number_1", None),
+            ("E", "benjamin", "habert", "phone_number_2", "05-12"),
+        ],
+        columns=["patient_id", "given_name", "surname", "phone_number", "birthday"],
+    )
+    result = list(deduplicate._find_pairs_from_phone(df))
+    assert result == [("A", "B")]
 
 
 def test_add_id_groups():

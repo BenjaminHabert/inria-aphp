@@ -27,9 +27,8 @@ def detect_duplicates(df_patient):
     Parameters
     ----------
         df_patient: DataFrame of patients
-            - required columns: `['patient_id', 'given_name', 'surname', 'street_number',
-                'address_1', 'suburb', 'postcode', 'state', 'age', 'phone_number', 'address_2',
-                'birthday']`
+            - required columns: `['patient_id', 'given_name', 'surname', 'postcode',
+              'age', 'phone_number', 'birthday']`
             - can contain additional columns that will be preserved
 
     Returns
@@ -57,24 +56,42 @@ def detect_duplicates(df_patient):
 
 @runtime
 def _find_pairs_from_phone(df_patient):
-    """Return list of (patient_id_1, patient_id_2) for duplicated users (same phone and name)."""
+    """Return list of (patient_id_1, patient_id_2) for duplicated users.
+
+    Patients are considered duplicates if they have the same phone and either:
+        - similar fullename
+        - or same birthday
+        - or same given_name
+
+    """
     pairs = []
-    for _, group in df_patient.groupby("phone_number"):
-        if len(group) < 2:
-            continue
-        for patient_1, patient_2 in _iter_pairs_of_rows(group):
-            conditions = (
-                _same_name(patient_1, patient_2),
-                # _same_birthday(patient_1, patient_2),
-            )
-            if any(conditions):
-                pairs.append((patient_1["patient_id"], patient_2["patient_id"]))
+    duplicate_candidates = _iter_patient_pairs_by_group(df_patient, "phone_number")
+
+    for patient_1, patient_2 in duplicate_candidates:
+        conditions = (
+            _is_same(patient_1, patient_2, "birthday"),
+            _is_same(patient_1, patient_2, "given_name"),
+            _similar_fullname(patient_1, patient_2),
+        )
+        if any(conditions):
+            pairs.append((patient_1["patient_id"], patient_2["patient_id"]))
     return pairs
 
 
 @runtime
 def _find_pairs_from_postcode_and_birthday(df_patient):
     pairs = []
+    duplicate_candidates = _iter_patient_pairs_by_group(
+        df_patient, ["postcode", "birthday"]
+    )
+
+    for patient_1, patient_2 in duplicate_candidates:
+        conditions = (
+            _is_same(patient_1, patient_2, "age")
+            and _similar_fullname(patient_1, patient_2),
+        )
+        if any(conditions):
+            pairs.append((patient_1["patient_id"], patient_2["patient_id"]))
     return pairs
 
 
@@ -105,7 +122,9 @@ def _add_id_groups(df_patient, groups_of_ids):
     records = (
         {
             "patient_id": key,
-            "all_patient_ids": list(value),
+            "all_patient_ids": list(
+                sorted(value)
+            ),  # sorted is just here to make sure the output is allways the same
             "unique_patient_id": min(value),
         }
         for key, value in groups_of_ids.items()
@@ -181,13 +200,27 @@ def _build_id_groups(pairs_of_ids):
     return groups
 
 
+def _iter_patient_pairs_by_group(df_patient, groupby_condition):
+    for _, group in df_patient.groupby(groupby_condition):
+        if len(group) < 2:
+            continue
+        yield from _iter_pairs_of_rows(group)
+
+
 def _iter_pairs_of_rows(df):
     for i, (_, row_1) in enumerate(df.iterrows()):
         for _, row_2 in df.iloc[i + 1 :].iterrows():  # noqa E203
             yield (row_1, row_2)
 
 
-def _same_name(patient_1, patient_2, maximum_distance=2):
+def _similar_fullname(patient_1, patient_2, maximum_distance=3):
+    # comparison is only allowed if we have both given_name and surname
+    values = [
+        p[col] for p in (patient_1, patient_2) for col in ("given_name", "surname")
+    ]
+    if any(v is None or v is np.NaN for v in values):
+        return False
+
     fullname_1 = _sorted_string(patient_1["given_name"], patient_1["surname"])
     fullname_2 = _sorted_string(patient_2["given_name"], patient_2["surname"])
     return Levenshtein.distance(fullname_1, fullname_2) <= maximum_distance
@@ -199,9 +232,9 @@ def _sorted_string(*string_elements):
     return " ".join(sorted(s for s in assembled.split(" "))).strip()
 
 
-def _same_birthday(patient_1, patient_2):
+def _is_same(patient_1, patient_2, column):
     return (
-        (patient_1["birthday"] == patient_2["birthday"])
-        and patient_1["birthday"]
-        and patient_1["birthday"] is not np.NaN
+        patient_1[column] is not None
+        and patient_1[column] is not np.NaN
+        and patient_1[column] == patient_2[column]
     )

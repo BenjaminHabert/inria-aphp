@@ -29,20 +29,23 @@ def test_sorted_string():
     assert deduplicate._sorted_string("b", np.NaN, "a") == "a b"
 
 
-def test_same_name():
+def test_similar_fullname():
     patient_1 = pd.Series({"given_name": "benjamin", "surname": "habert"})
 
     patient_2 = pd.Series({"given_name": "habert", "surname": "benjamin"})
-    assert deduplicate._same_name(patient_1, patient_2)
+    assert deduplicate._similar_fullname(patient_1, patient_2)
 
     patient_2 = pd.Series({"given_name": "benjmin", "surname": "habert"})
-    assert deduplicate._same_name(patient_1, patient_2)
+    assert deduplicate._similar_fullname(patient_1, patient_2)
 
     patient_2 = pd.Series({"given_name": "benjmin", "surname": "haert"})
-    assert deduplicate._same_name(patient_1, patient_2)
+    assert deduplicate._similar_fullname(patient_1, patient_2)
 
     patient_2 = pd.Series({"given_name": "bnjmin", "surname": "haert"})
-    assert not deduplicate._same_name(patient_1, patient_2)
+    assert deduplicate._similar_fullname(patient_1, patient_2)
+
+    patient_2 = pd.Series({"given_name": "bnjmin", "surname": "haer"})
+    assert not deduplicate._similar_fullname(patient_1, patient_2)
 
 
 def _build_id_groups():
