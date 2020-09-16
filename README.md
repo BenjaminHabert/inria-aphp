@@ -2,9 +2,17 @@
 
 réponse à l'exercice https://github.com/agramfort/inria-aphp-assignment
 
+![](images/prevalence_map.png)
 
-## Setup
+## Development notes
 
+- python3 + pydata tools
+- linting with flake8; autoformatting with black
+- testing with pytest
+- uses github Actions for CI
+
+
+### Setup
 ```
 git clone https://github.com/BenjaminHabert/inria-aphp.git
 cd inria-aphp
@@ -24,7 +32,19 @@ jupyter notebook
 
 ## Organisation des fichiers
 
-- le notebooks [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb) contient une analyse de qualité des données partients
+- `data/`
+  - données patient sqlite
+  - open data du bureau des statistiques australien
+- `notebooks/`
+  - [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb) : analyse de qualité des données partients
+  - [check_raw_pcr](notebooks/2020-09-14_check_raw_pcr.ipynb) : analyse de qualité des tests PCR
+  - [analysis](notebooks/2020-09-16_analysis.ipynb) et [analysis_opendata](notebooks/2020-09-16_analysis_opendata.ipynb):
+    exploration de données après nettoyage et dé-duplication des données d'entrée
+- `aphp/` : application python pour le nettoyage des données
+  - `load.py`: contient des fonctions pour charger les données à plusieurs étapes du processus de nettoyage
+  - `deduplicate.py`: code de dé-duplication; c'est ici que le plus de soin a été mis
+- `tests/`: fonction de test du code python; surtout de la partie dé-duplication
+
 
 # Notes
 
@@ -193,6 +213,10 @@ Patient deduplication: 19597 -> 18376
 <detect_duplicates> - 10.6 s
 ```
 
+Voici la statistique du nombre de lignes regroupées en un seul patient:
+
+![](images/deduplication.png)
+
 En explorant rapidement le jeu de données final, on constate qu'il contient toujours quelques doublons.
 Par exemple il existe encore 1 numéro de téléphone
 avec 3 doublons.
@@ -204,4 +228,73 @@ on risque également de regrouper des lignes qui ne devraient pas l'être.
 
 ## Analyse des résultats de test PCR
 
-voici les résultats
+Nous réalisons la jointure entre la liste des patients et les résultats de test PCR en utilisant la colonne
+`all_patient_ids` qui contient la liste des id pour chaque patient après dé-doublonnage.
+Comme nous l'avions constaté précédemment, il peut y avoir plusieurs résultats de test pour un même patient.
+Nous choisissons qu'un patient est testé positivement si au moins l'un des tests PCR a un résultat positif.
+
+
+Pour une analyse des résultats, nous conservons seulement les colonnes suivantes:
+`["age", "postcode", "state", "pcr_positive"]`. De cette manière nous travaillons avec un jeu de donnée à
+l'échelle du patient mais qui ne contient pas d'information identifiante.
+
+Nous étudions la fraction des patients ayant bénéficié d'un test PCR et la prévalence (taux de tests positifs)
+en fonction de plusieurs critères:
+- population globale
+- par classes d'age
+- par état
+
+Dans la population globale, nous observons:
+- 45% des patients de la base ont été testés à l'aide d'un test PCR
+- parmis ceux-ci, **25% des patients sont testés positivement**. Cette statistique est très surprenante puisque le taux
+  de tests positifs rapporté par le [ministère de la santé](https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers#tests-conducted-and-results)
+  est de **0.4%** au niveau national.
+
+  ![](images/statistiques_officielles.png)
+
+Nous ne savons pas comment expliquer cette différence énorme. Il peut y avoir une erreur dans la manière dont les données
+sont traitées. Peut être que la table de patients dont nous disposons correspond à une population très particulière.
+
+
+En étudiant par classe d'age puis par état, nous somme surpris de constater que le taux de test et la
+prévalence sont très uniformes.
+
+- par classe d'age :
+
+  ![](images/pcr_by_age.png)
+
+  ![](images/prevalence_by_age.png)
+
+
+- par état :
+
+  ![](images/pcr_by_state.png)
+
+  ![](images/prevalence_by_state.png)
+
+
+### Apport de données externes
+
+Nous souhaitons exploiter la colonne `postcode` pour enrichir le jeu de données. Nous récupérons les
+données suivantes:
+- correspondance `postcode -> lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.003July%202019?OpenDocument))
+- densité de population par `lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3218.02016-17?OpenDocument))
+- contours géographiques des `lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.003July%202019?OpenDocument))
+
+*Note: nous ne conservons dans le repo qu'une version simplifiée de ces données)*
+
+
+A partir de ces données, nous pouvons réaliser une courte étude à l'échelle LGA (*Local Government Area*).
+
+- la densité de population ne semble pas avoir d'impact sur la prévalence (la taille des points représente le nombre
+  de patients)
+
+  ![](images/prevalence_par_lga.png)
+
+
+- une représentation cartographique ne révelle pas non plus de distribution spatiale particulière. Les zones grises
+  correspondent à un nombre de patients testés inférieur à 5.
+
+  ![](images/prevalence_map.png)
+  
+

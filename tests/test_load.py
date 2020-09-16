@@ -22,3 +22,13 @@ def test_load_clean_patients():
 def test_load_clean_tests():
     df = load.load_clean_tests()
     assert not df.empty
+
+
+def test_load_deduplicated():
+    df = load.load_deduplicated_patients()
+    assert not df.empty
+
+
+def test_load_analysis_dataset():
+    df = load.load_patient_test_results()
+    assert not df.empty

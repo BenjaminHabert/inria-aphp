@@ -3,6 +3,8 @@ sqlalchemy
 jupyter
 matplotlib
 python-Levenshtein
+plotly
+scipy
 
 # dev requirements
 pytest
