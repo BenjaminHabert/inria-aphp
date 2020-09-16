@@ -1,7 +1,15 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-from aphp import settings, clean_patient, clean_pcr, deduplicate
+from aphp import settings, clean_patient, clean_pcr, deduplicate, merge
+
+
+def load_patient_test_results():
+    patients = load_deduplicated_patients()
+    pcr = load_clean_tests()
+    merged = merge.merge_pcr_tests(patients, pcr)
+    columns_to_keep = ["age", "postcode", "state", "pcr_positive"]
+    return merged.loc[:, columns_to_keep]
 
 
 def load_deduplicated_patients():
