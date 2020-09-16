@@ -258,7 +258,23 @@ prévalence sont très uniformes.
 Nous souhaitons exploiter la colonne `postcode` pour enrichir le jeu de données. Nous récupérons les
 données suivantes:
 - correspondance `postcode -> lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.003July%202019?OpenDocument))
-- densité de population par `lga_code` *Local Government Area* (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3218.02016-17?OpenDocument))
+- densité de population par `lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3218.02016-17?OpenDocument))
 - contours géographiques des `lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.003July%202019?OpenDocument))
 
 *Note: nous ne conservons dans le repo qu'une version simplifiée de ces données)*
+
+
+A partir de ces données, nous pouvons réaliser une courte étude à l'échelle LGA (*Local Government Area*).
+
+- la densité de population ne semble pas avoir d'impact sur la prévalence (la taille des points représente le nombre
+  de patients)
+
+  ![](images/prevalence_par_lga.png)
+
+
+- une représentation cartographique ne révelle pas non plus de distribution spatiale particulière. Les zones grises
+  correspondent à un nombre de patients testés inférieur à 5.
+
+  ![](images/prevalence_map.png)
+  
+
