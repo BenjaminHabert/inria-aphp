@@ -193,6 +193,10 @@ Patient deduplication: 19597 -> 18376
 <detect_duplicates> - 10.6 s
 ```
 
+Voici la statistique du nombre de lignes regroupées en un seul patient:
+
+![](images/deduplication.png)
+
 En explorant rapidement le jeu de données final, on constate qu'il contient toujours quelques doublons.
 Par exemple il existe encore 1 numéro de téléphone
 avec 3 doublons.
