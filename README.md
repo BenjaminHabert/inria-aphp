@@ -208,4 +208,46 @@ on risque également de regrouper des lignes qui ne devraient pas l'être.
 
 ## Analyse des résultats de test PCR
 
-voici les résultats
+Nous réalisons la jointure entre la liste des patients et les résultats de test PCR en utilisant la colonne
+`all_patient_ids` qui contient la liste des id pour chaque patient après dé-doublonnage.
+Comme nous l'avions constaté précédemment, il peut y avoir plusieurs résultats de test pour un même patient.
+Nous choisissons qu'un patient est testé positivement si au moins l'un des tests PCR a un résultat positif.
+
+
+Pour une analyse des résultats, nous conservons seulement les colonnes suivantes:
+`["age", "postcode", "state", "pcr_positive"]`. De cette manière nous travaillons avec un jeu de donnée à
+l'échelle du patient mais qui ne contient pas d'information identifiante.
+
+Nous étudions la fraction des patients ayant bénéficié d'un test PCR et la prévalence (taux de tests positifs)
+en fonction de plusieurs critères:
+- population globale
+- par classes d'age
+- par état
+
+Dans la population globale, nous observons:
+- 45% des patients de la base ont été testés à l'aide d'un test PCR
+- parmis ceux-ci, **25% des patients sont testés positivement**. Cette statistique est très surprenante puisque le taux
+  de tests positifs rapporté par le [ministère de la santé](https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers#tests-conducted-and-results)
+  est de **0.4%** au niveau national.
+
+  ![](images/statistiques_officielles.png)
+
+Nous ne savons pas comment expliquer cette différence énorme. Il peut y avoir une erreur dans la manière dont les données
+sont traitées. Peut être que la table de patients dont nous disposons correspond à une population très particulière.
+
+
+En étudiant par classe d'age puis par état, nous somme surpris de constater que le taux de test et la
+prévalence sont très uniformes.
+
+- par classe d'age :
+
+  ![](images/pcr_by_age.png)
+
+  ![](images/prevalence_by_age.png)
+
+
+- par état :
+
+  ![](images/pcr_by_state.png)
+
+  ![](images/prevalence_by_state.png)
