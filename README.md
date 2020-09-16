@@ -2,9 +2,17 @@
 
 réponse à l'exercice https://github.com/agramfort/inria-aphp-assignment
 
+![](images/prevalence_map.png)
 
-## Setup
+## Development notes
 
+- python3 + pydata tools
+- linting with flake8; autoformatting with black
+- testing with pytest
+- uses github Actions for CI
+
+
+### Setup
 ```
 git clone https://github.com/BenjaminHabert/inria-aphp.git
 cd inria-aphp
@@ -24,7 +32,19 @@ jupyter notebook
 
 ## Organisation des fichiers
 
-- le notebooks [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb) contient une analyse de qualité des données partients
+- `data/`
+  - données patient sqlite
+  - open data du bureau des statistiques australien
+- `notebooks/`
+  - [check_raw_patient_data](notebooks/2020-09-13_check_raw_patient_data.ipynb) : analyse de qualité des données partients
+  - [check_raw_pcr](notebooks/2020-09-14_check_raw_pcr.ipynb) : analyse de qualité des tests PCR
+  - [analysis](notebooks/2020-09-16_analysis.ipynb) et [analysis_opendata](notebooks/2020-09-16_analysis_opendata.ipynb):
+    exploration de données après nettoyage et dé-duplication des données d'entrée
+- `aphp/` : application python pour le nettoyage des données
+  - `load.py`: contient des fonctions pour charger les données à plusieurs étapes du processus de nettoyage
+  - `deduplicate.py`: code de dé-duplication; c'est ici que le plus de soin a été mis
+- `tests/`: fonction de test du code python; surtout de la partie dé-duplication
+
 
 # Notes
 
