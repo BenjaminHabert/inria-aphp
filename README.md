@@ -251,3 +251,14 @@ prévalence sont très uniformes.
   ![](images/pcr_by_state.png)
 
   ![](images/prevalence_by_state.png)
+
+
+### Apport de données externes
+
+Nous souhaitons exploiter la colonne `postcode` pour enrichir le jeu de données. Nous récupérons les
+données suivantes:
+- correspondance `postcode -> lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.003July%202019?OpenDocument))
+- densité de population par `lga_code` *Local Government Area* (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3218.02016-17?OpenDocument))
+- contours géographiques des `lga_code` (source: [Australian Bureau of Statistics](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.003July%202019?OpenDocument))
+
+*Note: nous ne conservons dans le repo qu'une version simplifiée de ces données)*
